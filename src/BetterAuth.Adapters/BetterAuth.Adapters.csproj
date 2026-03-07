@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\BetterAuth\BetterAuth.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <PackageId>BetterAuth.Adapters</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Aaron Dye Jr</Authors>
+    <Description>An unofficial C# port of BetterAuth — database-agnostic authentication with a plugin system</Description>
+    <PackageTags>auth;authentication;better-auth;session;plugin</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/aarondyejr/BetterAuth.NET</RepositoryUrl>
+    <RootNamespace>BetterAuth.Postgres</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackTarget="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MySql\" />
+    <Folder Include="Sqlite\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.72" />
+    <PackageReference Include="Npgsql" Version="10.0.1" />
+  </ItemGroup>
+</Project>
