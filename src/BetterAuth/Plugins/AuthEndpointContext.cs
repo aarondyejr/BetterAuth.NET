@@ -25,7 +25,10 @@ public class AuthEndpointContext
 
     public object Json(object data) => data;
 
-    public void SetCookie(string name, string value, CookieOptions options) { }
+    public void SetCookie(string name, string value, CookieOptions options)
+    {
+        Request.HttpContext.Response.Cookies.Append(name, value, options);
+    }
 
     public string? GetCookie(string name)
     {

@@ -277,6 +277,11 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
     
     private UserRecord MapToUserRecord(Dictionary<string, object?> data)
     {
+        foreach (var (key, value) in data)
+        {
+            Console.WriteLine($"{key}: {value?.GetType()} = {value}");
+        }
+        
         return new UserRecord
         {
             Id = (string)data["id"]!,
