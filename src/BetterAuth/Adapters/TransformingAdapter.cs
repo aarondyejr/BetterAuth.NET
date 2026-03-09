@@ -179,20 +179,32 @@ public class TransformingAdapter(
 
     private Dictionary<string, object?> TransformOutput(Dictionary<string, object?> data)
     {
-        // Key mapping first (e.g., _id → id)
         var transformed = config.MapKeysOutput != null
             ? MapKeys(data, config.MapKeysOutput)
             : new Dictionary<string, object?>(data);
 
-        foreach (var (key, value) in transformed)
+        foreach (var key in transformed.Keys.ToList())
         {
-            // 0/1 → booleans
-            if (!config.SupportsBooleans && value is int i and (0 or 1))
-                transformed[key] = i == 1;
+            var value = transformed[key];
 
-            // ISO strings → dates
+            if (IsNumeric(value))
+            {
+                var longValue = Convert.ToInt64(value);
+                if (longValue is 0 or 1)
+                {
+                    transformed[key] = longValue == 1;
+                }
+            }
+        
+            
             if (!config.SupportsDates && value is string s && DateTime.TryParse(s, out var dt))
+            {
                 transformed[key] = dt;
+            }
+            else if (value is DateTime dateTime && dateTime.Kind == DateTimeKind.Unspecified)
+            {
+                transformed[key] = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            }
         }
 
         return transformed;
@@ -220,4 +232,7 @@ public class TransformingAdapter(
     {
         return $"{model}s";
     }
+    
+    private static bool IsNumeric(object? v) => 
+        v is sbyte or byte or short or ushort or int or uint or long or ulong;
 }

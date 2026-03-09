@@ -25,12 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MySql\" />
-    <Folder Include="Sqlite\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.72" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.3" />
+    <PackageReference Include="MySqlConnector" Version="2.5.0" />
     <PackageReference Include="Npgsql" Version="10.0.1" />
   </ItemGroup>
 </Project>

@@ -52,8 +52,6 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
         
         var user =  MapToUserRecord(rawUser);
 
-        AccountRecord? account;
-
         if (includeAccounts)
         {
             var accountArgs = new FindManyArgs()
