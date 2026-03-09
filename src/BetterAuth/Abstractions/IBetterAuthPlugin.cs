@@ -6,12 +6,8 @@ namespace BetterAuth.Abstractions;
 public interface IBetterAuthPlugin
 {
     string Id { get; }
-    
-    PluginSchema? Schema { get; }
-    
-    IReadOnlyList<AuthHook>? Hooks { get; }
-    
-    IReadOnlyList<AuthEndpointDefinition>? Endpoints { get; }
-    
-    void OnRegister(AuthContext context) {}
+    PluginSchema? Schema => null;
+    IReadOnlyList<AuthHook>? Hooks => null;
+    IReadOnlyList<AuthEndpointDefinition>? Endpoints => null;
+    void OnRegister(AuthContext context) { }
 }

@@ -28,6 +28,20 @@ public class BetterAuthEngine
         PasswordHasher = new BCryptPasswordHasher();
         
         PluginRegistry = new PluginRegistry();
+
+        var context = new AuthContext
+        {
+            Options = options,
+            InternalAdapter = InternalAdapter,
+            PasswordHasher = PasswordHasher,
+            Secret = Secret,
+            DatabaseAdapter = options.DatabaseAdapter,
+        };
+
+        foreach (var plugin in options.Plugins)
+        {
+            PluginRegistry.Register(plugin, context);
+        }
     }
 
     public void MapRoutes(IEndpointRouteBuilder app)

@@ -21,7 +21,7 @@ public static class BetterAuthEndpointExtensions
         {
             MapEndpoint(app, basePath, endpoint, engine);
         }
-
+        
         foreach (var endpoint in engine.PluginRegistry.GetAllEndpoints())
         {
             MapEndpoint(app, basePath, endpoint, engine);
@@ -56,7 +56,7 @@ public static class BetterAuthEndpointExtensions
                     .GetRequiredService<ILoggerFactory>()
                     .CreateLogger($"BetterAuth.Endpoint[{endpoint.Method} {endpoint.Path}]");
                 
-                var body = endpoint.Method != HttpMethodType.GET
+                var body = endpoint.Method != HttpMethodType.GET && httpContext.Request.ContentLength > 0
                     ? await httpContext.Request.ReadFromJsonAsync<Dictionary<string, object?>>()
                     : null;
 

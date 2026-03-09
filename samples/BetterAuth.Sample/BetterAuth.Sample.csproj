@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\BetterAuth\BetterAuth.csproj" />
     <ProjectReference Include="..\..\src\BetterAuth.Adapters\BetterAuth.Adapters.csproj" />
+    <ProjectReference Include="..\..\src\BetterAuth.Plugins\BetterAuth.Plugins.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

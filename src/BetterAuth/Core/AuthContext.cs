@@ -11,6 +11,6 @@ public class AuthContext
     
     public required IAuthDatabaseAdapter DatabaseAdapter { get; init; }
     public required IPasswordHasher PasswordHasher { get; init; }
-    public required ILogger Logger { get; init; }
+    public ILogger? Logger { get; init; } = null;
     public required string Secret { get; init; }
 }
