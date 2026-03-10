@@ -5,7 +5,7 @@ using BetterAuth.Plugins;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace BetterAuth.Endpoints;
+namespace BetterAuth.Endpoints.SignUp;
 
 public class SignUpEndpoint : IAuthEndpoint
 {
@@ -13,57 +13,22 @@ public class SignUpEndpoint : IAuthEndpoint
     {
         Path = "/sign-up/email",
         Method = HttpMethodType.POST,
-        BodySchema = new AuthRequestSchema
-        {
-            Fields = new()
-            {
-                ["email"] = new FieldValidation
-                {
-                    Type = FieldType.String,
-                    Required = true,
-                    Description = "The user's email address",
-                },
-                ["password"] = new FieldValidation
-                {
-                    Type = FieldType.String,
-                    Required = true,
-                    Description = "The user's password",
-                },
-                ["name"] = new FieldValidation
-                {
-                    Type = FieldType.String,
-                    Required = true,
-                    Description = "The user's display name",
-                },
-                ["image"] = new FieldValidation
-                {
-                    Type = FieldType.String,
-                    Required = false,
-                    Description = "Profile image URL",
-                },
-                ["callbackURL"] = new FieldValidation
-                {
-                    Type = FieldType.String,
-                    Required = false,
-                    Description = "URL to redirect after email verification",
-                },
-            }
-        },
+        Validator = options => new SignUpValidator(options.EmailAndPassword),
         Handler = async ctx =>
         {
-            var exists = await ctx.AuthContext.InternalAdapter.FindUserByEmailAsync(ctx.Body["email"]!.ToString()!, false);
+            var exists = await ctx.AuthContext.InternalAdapter.FindUserByEmailAsync(ctx.Body["Email"]!.ToString()!, false);
 
             if (exists != null) throw AuthApiException.BadRequest("Account already exists.");
 
             var user = await ctx.AuthContext.InternalAdapter.CreateUserAsync(new()
             {
-                Email = ctx.Body["email"]!.ToString()!,
-                Image = ctx.Body.GetValueOrDefault("image")?.ToString(),
-                Name = ctx.Body["name"]!.ToString()!
+                Email = ctx.Body["Email"]!.ToString()!,
+                Image = ctx.Body.GetValueOrDefault("Image")?.ToString(),
+                Name = ctx.Body["Name"]!.ToString()!
             });
             // for now email/password is only supported, accountIds = userId
 
-            var password = await ctx.AuthContext.PasswordHasher.HashAsync(ctx.Body["password"]!.ToString()!);
+            var password = await ctx.AuthContext.PasswordHasher.HashAsync(ctx.Body["Password"]!.ToString()!);
 
             await ctx.AuthContext.InternalAdapter.CreateAccountAsync(new()
             {

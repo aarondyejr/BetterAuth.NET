@@ -1,8 +1,10 @@
-﻿using BetterAuth.Configuration;
+﻿using System.Text.Json;
+using BetterAuth.Configuration;
 using BetterAuth.Core;
 using BetterAuth.Errors;
 using BetterAuth.Models;
 using BetterAuth.Plugins;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -47,6 +49,9 @@ public static class BetterAuthEndpointExtensions
         BetterAuthEngine engine)
     {
         var fullPath = $"{basePath}{endpoint.Path}";
+        var cachedValidator = endpoint.Validator?.Invoke(engine.Options);
+        Type? requestType = cachedValidator != null ? GetValidatorRequestType(cachedValidator) : null;
+
 
         async Task<IResult> HandleRequest(HttpContext httpContext)
         {
@@ -55,14 +60,31 @@ public static class BetterAuthEndpointExtensions
                 var logger = httpContext.RequestServices
                     .GetRequiredService<ILoggerFactory>()
                     .CreateLogger($"BetterAuth.Endpoint[{endpoint.Method} {endpoint.Path}]");
-                
-                var body = endpoint.Method != HttpMethodType.GET && httpContext.Request.ContentLength > 0
-                    ? await httpContext.Request.ReadFromJsonAsync<Dictionary<string, object?>>()
-                    : null;
 
-                if (endpoint.BodySchema != null)
+                Dictionary<string, object?>? body = null;
+
+                if (endpoint.Method != HttpMethodType.GET && httpContext.Request.ContentLength > 0)
                 {
-                    ValidateBody(body, endpoint.BodySchema);
+
+                    if (cachedValidator != null)
+                    {
+                        var typedBody = await httpContext.Request.ReadFromJsonAsync(requestType!);
+                        
+                        var result = await cachedValidator.ValidateAsync(new ValidationContext<object>(typedBody!));
+                        
+                        if (!result.IsValid) 
+                            throw AuthApiException.BadRequest(result.Errors.Select(e => new ValidationError
+                            {
+                                Field = e.PropertyName.ToLower(),
+                                Message = e.ErrorMessage,
+                            }).ToList());
+                        
+                        body = JsonSerializer.Deserialize<Dictionary<string, object?>>(JsonSerializer.Serialize(typedBody));
+                    }
+                    else
+                    {
+                        body = await httpContext.Request.ReadFromJsonAsync<Dictionary<string, object?>>();
+                    }
                 }
 
                 var ctx = new AuthEndpointContext
@@ -107,7 +129,7 @@ public static class BetterAuthEndpointExtensions
             catch (AuthApiException ex)
             {
                 return Results.Json(
-                    new { error = ex.Message },
+                    new { error = ex.Payload },
                     statusCode: ex.StatusCode
                 );
             }
@@ -123,15 +145,19 @@ public static class BetterAuthEndpointExtensions
             _ => throw new ArgumentException($"Unsupported method: {endpoint.Method}")
         };
     }
-
-    private static void ValidateBody(Dictionary<string, object?>? body, AuthRequestSchema schema)
+    
+    private static Type GetValidatorRequestType(IValidator validator)
     {
-        foreach (var (field, validation) in schema.Fields)
+        var type = validator.GetType();
+    
+        while (type != null)
         {
-            if (validation.Required && (body == null || !body.ContainsKey(field) || body[field] == null))
-            {
-                throw AuthApiException.BadRequest($"'{field}' is required.");
-            }
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(AbstractValidator<>))
+                return type.GetGenericArguments()[0];
+        
+            type = type.BaseType;
         }
+    
+        throw new InvalidOperationException($"Could not determine request type for validator {validator.GetType().Name}");
     }
 }

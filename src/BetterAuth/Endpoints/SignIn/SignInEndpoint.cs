@@ -1,4 +1,5 @@
 ﻿using BetterAuth.Core;
+using BetterAuth.Endpoints.SignIn;
 using BetterAuth.Errors;
 using BetterAuth.Models.Inputs;
 using BetterAuth.Plugins;
@@ -12,34 +13,15 @@ internal class SignInEndpoint : IAuthEndpoint
     {
         Path = "/sign-in/email",
         Method = HttpMethodType.POST,
-        BodySchema = new AuthRequestSchema
-        {
-            Fields = new()
-            {
-                ["email"] = new FieldValidation
-                {
-                    Type = FieldType.String,
-                    Required = true,
-                    Description = "The user's email address",
-                },
-                ["password"] = new FieldValidation
-                {
-                    Type = FieldType.String,
-                    Required = true,
-                    Description = "The user's password",
-                },
-                ["callbackURL"] = new FieldValidation
-                {
-                    Type = FieldType.String,
-                    Required = false,
-                    Description = "URL to redirect after email verification",
-                },
-            }
-        },
+        Validator = _ => new SignInValidator(),
         Handler = async ctx =>
         {
+            foreach (var (key, value) in ctx.Body)
+            {
+                Console.WriteLine($"{key}: {value}");
+            }
             var user =
-                await ctx.AuthContext.InternalAdapter.FindUserByEmailAsync(ctx.Body["email"]!.ToString()!, true);
+                await ctx.AuthContext.InternalAdapter.FindUserByEmailAsync(ctx.Body["Email"]!.ToString()!, true);
             
             if (user == null) throw AuthApiException.BadRequest("Account not found.");
 
@@ -48,7 +30,7 @@ internal class SignInEndpoint : IAuthEndpoint
             if (account == null) throw AuthApiException.BadRequest("Account has to be credential");
 
             var isPasswordCorrect =
-                await ctx.AuthContext.PasswordHasher.VerifyAsync(account.Password!, ctx.Body["password"]!.ToString()!);
+                await ctx.AuthContext.PasswordHasher.VerifyAsync(account.Password!, ctx.Body["Password"]!.ToString()!);
 
             if (!isPasswordCorrect) throw AuthApiException.BadRequest("Incorrect password");
             
