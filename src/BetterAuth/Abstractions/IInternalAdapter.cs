@@ -12,8 +12,10 @@ public interface IInternalAdapter
     
     Task<SessionRecord> CreateSessionAsync(string userId, SessionMetadata? metadata);
     Task<SessionRecord?> FindSessionByTokenAsync(string token);
-    Task DeleteSessionAsync(string token);
+    Task<bool> DeleteSessionAsync(string token);
     Task DeleteUserSessionsAsync(string userId);
+    
+    Task<SessionRecord?> RefreshSessionAsync(SessionRecord session, SessionMetadata? metadata);
 
     Task<AccountRecord> CreateAccountAsync(CreateAccountInput input);
     Task<AccountRecord?> FindAccountByProviderAsync(string providerId, string accountId);

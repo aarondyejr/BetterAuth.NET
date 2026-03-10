@@ -86,13 +86,12 @@ public static class BetterAuthEndpointExtensions
 
                 foreach (var hook in engine.PluginRegistry.GetHooks(HookTiming.Before))
                 {
-                    if (hook.Matcher(ctx))
-                    {
-                        var result = await hook.Handler(ctx);
-                        if (result.Response != null)
-                            return Results.Json(result.Response);
-                        ctx = result.Context;
-                    }
+                    if (!hook.Matcher(ctx)) continue;
+                    
+                    var result = await hook.Handler(ctx);
+                    if (result.Response != null)
+                        return Results.Json(result.Response);
+                    ctx = result.Context;
                 }
 
                 var response = await endpoint.Handler(ctx);

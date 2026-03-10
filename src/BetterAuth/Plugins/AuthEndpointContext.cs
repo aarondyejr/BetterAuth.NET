@@ -32,6 +32,6 @@ public class AuthEndpointContext
 
     public string? GetCookie(string name)
     {
-        return "";
+        return Request.HttpContext.Request.Cookies.TryGetValue(name, out var value) ? value : null;
     }
 }

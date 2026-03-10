@@ -30,7 +30,7 @@ public class TestPlugin : IBetterAuthPlugin
         {
             Path = "/two-factor",
             Method = HttpMethodType.POST,
-            Handler = async ctx => ctx.Json(new Dictionary<string, object> { ["success"] = true })
+            Handler = async ctx => ctx.Json(ctx.Session)
         }
     ];
 }

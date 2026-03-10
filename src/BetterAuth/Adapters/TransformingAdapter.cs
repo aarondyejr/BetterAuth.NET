@@ -43,13 +43,13 @@ public class TransformingAdapter(
         return await rawAdapter.UpdateManyAsync(newArgs);
     }
 
-    public async Task DeleteAsync(DeleteArgs args)
+    public async Task<bool> DeleteAsync(DeleteArgs args)
     {
         var transformedModel = config.UsePlural ? Pluralize(args.Model) : args.Model;
         var transformedWhere = TransformWhereClauses(args.Where);
         var newArgs = new DeleteArgs { Model = transformedModel, Where = transformedWhere };
         
-        await rawAdapter.DeleteAsync(newArgs);
+        return await rawAdapter.DeleteAsync(newArgs);
     }
 
     public async Task<int> DeleteManyAsync(DeleteManyArgs args)

@@ -11,7 +11,7 @@ public interface IAuthDatabaseAdapter
     
     Task<int> UpdateManyAsync(UpdateManyArgs args);
     
-    Task DeleteAsync(DeleteArgs args);
+    Task<bool> DeleteAsync(DeleteArgs args);
     
     Task<int> DeleteManyAsync(DeleteManyArgs args);
     

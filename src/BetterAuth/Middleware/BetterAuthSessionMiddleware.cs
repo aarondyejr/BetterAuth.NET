@@ -1,4 +1,5 @@
 ﻿using BetterAuth.Core;
+using BetterAuth.Models.Inputs;
 using Microsoft.AspNetCore.Http;
 
 namespace BetterAuth.Middleware;
@@ -15,7 +16,31 @@ public class BetterAuthSessionMiddleware(RequestDelegate next, BetterAuthEngine 
 
             if (session != null && session.ExpiresAt > DateTime.UtcNow)
             {
-                // Attach session and user to the request context
+
+                if (session.ExpiresAt - DateTime.UtcNow < engine.Options.Session.UpdateAge)
+                {
+                    var metadata = new SessionMetadata
+                    {
+                        UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
+                        IpAddress = httpContext.Connection.RemoteIpAddress?.ToString(),
+                    };
+
+                    var refreshed = await engine.InternalAdapter.RefreshSessionAsync(session, metadata);
+
+                    if (refreshed != null)
+                    {
+                        session = refreshed;
+                        httpContext.Response.Cookies.Append("better-auth.session_token", session.Token, new CookieOptions
+                        {
+                            Expires = session.ExpiresAt,
+                            HttpOnly = true,
+                            SameSite = SameSiteMode.Lax,
+                            Secure = true
+                        });
+                    }
+                }
+
+
                 httpContext.Items["BetterAuth.Session"] = session;
                 var user = await engine.InternalAdapter.FindUserByIdAsync(session.UserId);
                 httpContext.Items["BetterAuth.User"] = user;

@@ -66,7 +66,7 @@ public class MySqlAdapter(string connectionString) : IAuthDatabaseAdapter
         return await conn.ExecuteAsync(sql, whereParams);
     }
 
-    public async Task DeleteAsync(DeleteArgs args)
+    public async Task<bool> DeleteAsync(DeleteArgs args)
     {
         await using var conn = CreateConnection();
         
@@ -74,7 +74,9 @@ public class MySqlAdapter(string connectionString) : IAuthDatabaseAdapter
 
         var sql = $"DELETE FROM `{args.Model}` {whereClause}";
         
-        await conn.ExecuteAsync(sql, whereParams);
+        var result = await conn.ExecuteAsync(sql, whereParams);
+
+        return result > 0;
     }
 
     public async Task<int> DeleteManyAsync(DeleteManyArgs args)

@@ -137,7 +137,16 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
         return rawSession == null ? null : MapToSessionRecord(rawSession);
     }
 
-    public async Task DeleteSessionAsync(string token)
+    public async Task<SessionRecord?> RefreshSessionAsync(SessionRecord session, SessionMetadata? metadata)
+    {
+        var deleted = await DeleteSessionAsync(session.Token);
+
+        if (!deleted) return null;
+
+        return await CreateSessionAsync(session.UserId, metadata);
+    }
+
+    public async Task<bool> DeleteSessionAsync(string token)
     {
         var args = new DeleteArgs
         {
@@ -145,7 +154,7 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
             Where = [new WhereClause { Field = "token", Operator = WhereOperator.Equals, Value = token }]
         };
         
-        await adapter.DeleteAsync(args);
+        return await adapter.DeleteAsync(args);
     }
 
     public async Task DeleteUserSessionsAsync(string userId)
@@ -275,11 +284,6 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
     
     private UserRecord MapToUserRecord(Dictionary<string, object?> data)
     {
-        foreach (var (key, value) in data)
-        {
-            Console.WriteLine($"{key}: {value?.GetType()} = {value}");
-        }
-        
         return new UserRecord
         {
             Id = (string)data["id"]!,
