@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
 using BetterAuth.Abstractions;
-using BetterAuth.Adapters.Args;
+using BetterAuth.Database.Args;
 using BetterAuth.Plugins;
 
-namespace BetterAuth.Adapters;
+namespace BetterAuth.Database;
 
 public class TransformingAdapter(
     AdapterConfig config,
@@ -150,9 +150,14 @@ public class TransformingAdapter(
         if (!config.SupportsBooleans && value is bool b)
             return b ? 1 : 0;
 
-        if (!config.SupportsDates && value is DateTime dt)
-            return dt.ToString("O");
-        
+        switch (config.SupportsDates)
+        {
+            case false when value is DateTime dt:
+                return dt.ToUniversalTime().ToString("O");
+            case true when value is DateTime dt2 && dt2.Kind != DateTimeKind.Utc:
+                return dt2.ToUniversalTime();
+        }
+
         if (!config.SupportsJson && value is not null && IsComplexType(value))
             return JsonSerializer.Serialize(value);
 
@@ -197,13 +202,13 @@ public class TransformingAdapter(
             }
         
             
-            if (!config.SupportsDates && value is string s && DateTime.TryParse(s, out var dt))
+            if (!config.SupportsDates && value is string s && DateTimeOffset.TryParse(s, out var dt))
             {
-                transformed[key] = dt;
+                transformed[key] = dt.UtcDateTime;
             }
-            else if (value is DateTime dateTime && dateTime.Kind == DateTimeKind.Unspecified)
+            else if (value is DateTime dateTime && dateTime.Kind != DateTimeKind.Utc)
             {
-                transformed[key] = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+                transformed[key] = dateTime.ToUniversalTime();
             }
         }
 

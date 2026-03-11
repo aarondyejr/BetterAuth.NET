@@ -1,4 +1,4 @@
-﻿namespace BetterAuth.Adapters;
+﻿namespace BetterAuth.Database;
 
 public record AdapterConfig
 {

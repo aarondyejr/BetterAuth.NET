@@ -1,7 +1,9 @@
-﻿using BetterAuth.Core;
+﻿using BetterAuth.Abstractions;
+using BetterAuth.Core;
 using BetterAuth.Errors;
 using BetterAuth.Models.Inputs;
 using BetterAuth.Plugins;
+using BetterAuth.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -20,13 +22,14 @@ public class SignUpEndpoint : IAuthEndpoint
 
             if (exists != null) throw AuthApiException.BadRequest("Account already exists.");
 
-            var user = await ctx.AuthContext.InternalAdapter.CreateUserAsync(new()
+            var user = await ctx.AuthContext.AuthService.CreateUserAsync(new()
             {
                 Email = ctx.Body["Email"]!.ToString()!,
                 Image = ctx.Body.GetValueOrDefault("Image")?.ToString(),
                 Name = ctx.Body["Name"]!.ToString()!
-            });
-            // for now email/password is only supported, accountIds = userId
+            }, ctx.HttpContext.RequestServices);
+            
+            // for now email/password is only supported, accountId = userId
 
             var password = await ctx.AuthContext.PasswordHasher.HashAsync(ctx.Body["Password"]!.ToString()!);
 
@@ -38,19 +41,29 @@ public class SignUpEndpoint : IAuthEndpoint
                 UserId = user.Id
             });
 
-            var session = await ctx.AuthContext.InternalAdapter.CreateSessionAsync(user.Id, new SessionMetadata()
+            var session = await ctx.AuthContext.AuthService.CreateSessionAsync(user.Id, new SessionMetadata()
             {
                 UserAgent = ctx.Request.Headers["User-Agent"].ToString(),
                 IpAddress = ctx.Request.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString(),
-            });
+            }, ctx.HttpContext.RequestServices);
             
-            ctx.SetCookie("better-auth.session_token", session.Token, new CookieOptions
+            var cookieOptions = ctx.AuthContext.Options.Session.Cookie;
+
+            cookieOptions.Expires = DateTime.UtcNow.Add(ctx.AuthContext.Options.Session.ExpiresIn);
+            
+            ctx.SetCookie("better-auth.session_token", session.Token, cookieOptions);
+
+            if (!ctx.AuthContext.Options.EmailVerification.SendOnSignUp)
             {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = session.ExpiresAt
-            });
+                return ctx.Json(new Dictionary<string, object?>()
+                {
+                    ["token"] = session.Token,
+                    ["user"] =  user
+                });
+            }
+
+            var emailService = ctx.Resolve<EmailVerificationService>();
+            _ = emailService.SendVerificationAsync(user, ctx.Body.GetValueOrDefault("CallbackUrl")?.ToString() ?? "", ctx.HttpContext);
 
             return ctx.Json(new Dictionary<string, object?>
             {

@@ -1,8 +1,8 @@
 ﻿using BetterAuth.Abstractions;
-using BetterAuth.Adapters;
+using BetterAuth.Database;
+using BetterAuth.Postgres.MySql;
 using BetterAuth.Postgres.Postgres;
 using BetterAuth.Postgres.Sqlite;
-using SQLitePCL;
 
 namespace BetterAuth.Postgres;
 
@@ -34,5 +34,19 @@ public static class BetterAuthDatabase
             SupportsJoin = true,
             SupportsTransactions = true,
         }, rawAdapter: new SqliteAdapter(connectionString));
+    }
+
+    public static IAuthDatabaseAdapter MySql(string connectionString)
+    {
+        return AuthDatabaseAdapterFactory.Create(config: new()
+        {
+            AdapterId = "mysql",
+            AdapterName = "MySQL",
+            SupportsJson = true,
+            SupportsDates = true,
+            SupportsBooleans = true,
+            SupportsJoin = true,
+            SupportsTransactions = true,
+        }, rawAdapter: new MySqlAdapter(connectionString));
     }
 }

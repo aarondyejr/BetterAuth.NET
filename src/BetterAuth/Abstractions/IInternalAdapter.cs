@@ -21,8 +21,8 @@ public interface IInternalAdapter
     Task<AccountRecord?> FindAccountByProviderAsync(string providerId, string accountId);
     
     Task<VerificationRecord> CreateVerificationValueAsync(CreateVerificationInput input);
-    Task<VerificationRecord?> FindVerificationValueAsync(string identifier);
-    Task DeleteVerificationByIdentifierAsync(string identifier);
+    Task<VerificationRecord?> FindVerificationValueAsync(string token);
+    Task DeleteVerificationByIdentifierAsync(string token);
     Task UpdateVerificationByIdentifierAsync(string identifier, Dictionary<string, object?> data);
 
 

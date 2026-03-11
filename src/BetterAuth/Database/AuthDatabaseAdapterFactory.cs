@@ -1,6 +1,6 @@
 ﻿using BetterAuth.Abstractions;
 
-namespace BetterAuth.Adapters;
+namespace BetterAuth.Database;
 
 public class AuthDatabaseAdapterFactory
 {

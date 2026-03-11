@@ -1,7 +1,10 @@
 ﻿using System.Text.RegularExpressions;
 using BetterAuth.Authorization;
 using BetterAuth.Configuration;
+using BetterAuth.Events;
+using BetterAuth.Events.Auth;
 using BetterAuth.Middleware;
+using BetterAuth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,9 +18,6 @@ public static class BetterAuthExtensions
         
         if (options.DatabaseAdapter == null)
             throw new InvalidOperationException("BetterAuthOptions.DatabaseAdapter is required.");
-        
-        var engine = new BetterAuthEngine(options);
-        services.AddSingleton(engine);
 
         services.AddCors(cors => cors.AddPolicy("BetterAuth", policy =>
         {
@@ -43,31 +43,42 @@ public static class BetterAuthExtensions
         
         services.AddAuthorizationBuilder()
             .AddPolicy("BetterAuth", policy => policy.AddRequirements(new BetterAuthRequirement()));
-
+        
+        var eventBus = new EventBus();
+        var engine = new BetterAuthEngine(options, eventBus);
+        
+        services.AddSingleton(engine);
+        services.AddScoped<EmailVerificationService>();
         services.AddScoped<IAuthorizationHandler, BetterAuthHandler>();
         services.AddHttpContextAccessor();
+        services.AddSingleton<IEventBus>(eventBus);
+
+        options.Events?.RegisterAll(eventBus);
         
         return services;
     }
 
-    public static WebApplication UseBetterAuth(this WebApplication app)
+    extension(WebApplication app)
     {
-        var engine = app.Services.GetRequiredService<BetterAuthEngine>();
-        app.UseCors("BetterAuth");
+        public WebApplication UseBetterAuth()
+        {
+            var engine = app.Services.GetRequiredService<BetterAuthEngine>();
+            app.UseCors("BetterAuth");
         
-        app.UseMiddleware<BetterAuthSessionMiddleware>(engine);
+            app.UseMiddleware<BetterAuthSessionMiddleware>(engine);
         
-        engine.MapRoutes(app);
+            engine.MapRoutes(app);
 
-        return app;
-    }
+            return app;
+        }
 
-    public static async Task<WebApplication> MigrateBetterAuthAsync(this WebApplication app)
-    {
-        var engine = app.Services.GetRequiredService<BetterAuthEngine>();
+        public async Task<WebApplication> MigrateBetterAuthAsync()
+        {
+            var engine = app.Services.GetRequiredService<BetterAuthEngine>();
 
-        await engine.MigrateAsync();
+            await engine.MigrateAsync();
 
-        return app;
+            return app;
+        }
     }
 }

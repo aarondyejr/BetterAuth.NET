@@ -1,6 +1,6 @@
 ﻿using BetterAuth.Plugins;
 
-namespace BetterAuth.Core;
+namespace BetterAuth.Abstractions;
 
 internal interface IAuthEndpoint
 {

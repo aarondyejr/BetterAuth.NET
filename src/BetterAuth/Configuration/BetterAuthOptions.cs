@@ -1,4 +1,5 @@
 ﻿using BetterAuth.Abstractions;
+using BetterAuth.Events;
 
 namespace BetterAuth.Configuration;
 
@@ -22,5 +23,11 @@ public class BetterAuthOptions
         UpdateAge = TimeSpan.FromDays(1)
     };
 
+    public RateLimitOptions RateLimit { get; init; } = new();
+    
+    public AuthEventOptions? Events { get; init; }
+
     public EmailPasswordOptions EmailAndPassword { get; init; } = new();
+    
+    public EmailVerificationOptions EmailVerification { get; init; } = new();
 }

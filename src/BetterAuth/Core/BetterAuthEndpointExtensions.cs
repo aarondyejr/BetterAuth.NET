@@ -4,6 +4,7 @@ using BetterAuth.Core;
 using BetterAuth.Errors;
 using BetterAuth.Models;
 using BetterAuth.Plugins;
+using BetterAuth.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +12,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace BetterAuth.Middleware;
+namespace BetterAuth.Core;
 
 public static class BetterAuthEndpointExtensions
 {
@@ -51,12 +52,12 @@ public static class BetterAuthEndpointExtensions
         var fullPath = $"{basePath}{endpoint.Path}";
         var cachedValidator = endpoint.Validator?.Invoke(engine.Options);
         Type? requestType = cachedValidator != null ? GetValidatorRequestType(cachedValidator) : null;
-
-
+        
         async Task<IResult> HandleRequest(HttpContext httpContext)
         {
             try
             {
+                
                 var logger = httpContext.RequestServices
                     .GetRequiredService<ILoggerFactory>()
                     .CreateLogger($"BetterAuth.Endpoint[{endpoint.Method} {endpoint.Path}]");
@@ -89,7 +90,7 @@ public static class BetterAuthEndpointExtensions
 
                 var ctx = new AuthEndpointContext
                 {
-                    Request = httpContext.Request,
+                    HttpContext = httpContext,
                     AuthContext = new()
                     {
                         Options = engine.Options,
@@ -98,12 +99,14 @@ public static class BetterAuthEndpointExtensions
                         PasswordHasher = engine.PasswordHasher,
                         Logger = logger,
                         Secret = engine.Secret,
+                        AuthService = new AuthService(engine.InternalAdapter, engine.EventBus)
                     },
                     Body = body ?? new(),
                     Path = endpoint.Path,
                     BaseUrl = ResolveBaseUrl(engine.Options, httpContext.Request),
                     Session = httpContext.Items["BetterAuth.Session"] as SessionRecord,
                     User = httpContext.Items["BetterAuth.User"] as UserRecord,
+                    Query = httpContext.Request.Query.ToDictionary(q => q.Key, q => q.Value.ToString().Trim())
                 };
 
                 foreach (var hook in engine.PluginRegistry.GetHooks(HookTiming.Before))
@@ -117,6 +120,9 @@ public static class BetterAuthEndpointExtensions
                 }
 
                 var response = await endpoint.Handler(ctx);
+
+                if (response is null)
+                    return Results.Empty;
 
                 foreach (var hook in engine.PluginRegistry.GetHooks(HookTiming.After))
                 {

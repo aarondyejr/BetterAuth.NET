@@ -1,4 +1,4 @@
-namespace BetterAuth.Adapters.Args;
+namespace BetterAuth.Database.Args;
 
 public record UpdateArgs
 {

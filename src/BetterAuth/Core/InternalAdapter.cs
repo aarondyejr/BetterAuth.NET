@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 using BetterAuth.Abstractions;
-using BetterAuth.Adapters.Args;
+using BetterAuth.Database.Args;
 using BetterAuth.Configuration;
 using BetterAuth.Models;
 using BetterAuth.Models.Inputs;
@@ -25,6 +25,8 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
                 ["updatedAt"] = DateTime.UtcNow
             }
         };
+        
+        
         
         return MapToUserRecord(await adapter.CreateAsync(args));
     }
@@ -214,7 +216,7 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
             {
                 ["id"] = GenerateId(),
                 ["identifier"] = input.Identifier,
-                ["value"] = input.Value,
+                ["value"] = GenerateSessionToken(),
                 ["expiresAt"] = input.ExpiresAt,
                 ["createdAt"] = DateTime.UtcNow,
                 ["updatedAt"] = DateTime.UtcNow
@@ -224,12 +226,12 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
         return MapToVerificationRecord(await adapter.CreateAsync(args));
     }
 
-    public async Task<VerificationRecord?> FindVerificationValueAsync(string identifier)
+    public async Task<VerificationRecord?> FindVerificationValueAsync(string token)
     {
         var args = new FindOneArgs
         {
             Model = "verification",
-            Where = [new WhereClause { Field = "identifier", Operator = WhereOperator.Equals, Value = identifier }]
+            Where = [new WhereClause { Field = "value", Operator = WhereOperator.Equals, Value = token }]
         };
         
         var rawVerification = await adapter.FindOneAsync(args);
@@ -237,12 +239,12 @@ public class InternalAdapter(IAuthDatabaseAdapter adapter, BetterAuthOptions opt
         return rawVerification == null ? null : MapToVerificationRecord(rawVerification);
     }
 
-    public async Task DeleteVerificationByIdentifierAsync(string identifier)
+    public async Task DeleteVerificationByIdentifierAsync(string token)
     {
         var args = new DeleteArgs
         {
             Model = "verification",
-            Where = [new WhereClause { Field = "identifier", Operator = WhereOperator.Equals, Value = identifier }]
+            Where = [new WhereClause { Field = "value", Operator = WhereOperator.Equals, Value = token }]
         };
         
         await  adapter.DeleteAsync(args);

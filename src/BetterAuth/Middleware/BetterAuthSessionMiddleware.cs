@@ -29,14 +29,12 @@ public class BetterAuthSessionMiddleware(RequestDelegate next, BetterAuthEngine 
 
                     if (refreshed != null)
                     {
+                        var cookieOptions = engine.Options.Session.Cookie;
+
+                        cookieOptions.Expires = DateTime.UtcNow.Add(engine.Options.Session.ExpiresIn);
+                        
                         session = refreshed;
-                        httpContext.Response.Cookies.Append("better-auth.session_token", session.Token, new CookieOptions
-                        {
-                            Expires = session.ExpiresAt,
-                            HttpOnly = true,
-                            SameSite = SameSiteMode.Lax,
-                            Secure = true
-                        });
+                        httpContext.Response.Cookies.Append("better-auth.session_token", session.Token, cookieOptions);
                     }
                 }
 

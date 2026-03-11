@@ -1,4 +1,5 @@
-﻿using BetterAuth.Core;
+﻿using BetterAuth.Abstractions;
+using BetterAuth.Core;
 using BetterAuth.Errors;
 using BetterAuth.Plugins;
 

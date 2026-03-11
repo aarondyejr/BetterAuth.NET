@@ -2,7 +2,7 @@
 using BetterAuth.Abstractions;
 using BetterAuth.Configuration;
 using BetterAuth.Crypto;
-using BetterAuth.Middleware;
+using BetterAuth.Events;
 using BetterAuth.Plugins;
 using Microsoft.AspNetCore.Routing;
 
@@ -16,9 +16,13 @@ public class BetterAuthEngine
     public PluginRegistry PluginRegistry { get; }
     
     public string Secret => ResolveSecret(Options);
+    
+    public EventBus EventBus { get; set; }
 
-    public BetterAuthEngine(BetterAuthOptions options)
+    public BetterAuthEngine(BetterAuthOptions options, EventBus eventBus)
     {
+        EventBus = eventBus;
+        
         Options = options;
         
         var adapter = options.DatabaseAdapter;

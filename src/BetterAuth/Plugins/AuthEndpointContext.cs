@@ -1,12 +1,14 @@
 ﻿using BetterAuth.Core;
 using BetterAuth.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BetterAuth.Plugins;
 
 public class AuthEndpointContext
 {
-    public required HttpRequest Request { get; init; }
+    public required HttpContext HttpContext { get; init; }
+    public HttpRequest Request => HttpContext.Request;
 
     public required AuthContext AuthContext { get; init; }
 
@@ -27,11 +29,37 @@ public class AuthEndpointContext
 
     public void SetCookie(string name, string value, CookieOptions options)
     {
-        Request.HttpContext.Response.Cookies.Append(name, value, options);
+        HttpContext.Response.Cookies.Append(name, value, options);
     }
 
     public string? GetCookie(string name)
     {
-        return Request.HttpContext.Request.Cookies.TryGetValue(name, out var value) ? value : null;
+        return HttpContext.Request.Cookies.TryGetValue(name, out var value) ? value : null;
+    }
+
+    public void DeleteCookie(string name)
+    {
+        HttpContext.Response.Cookies.Delete(name);
+    }
+
+    public T Resolve<T>()
+    {
+        return HttpContext.RequestServices.GetRequiredService<T>();
+    }
+
+    public bool IsValidCallbackUrl(string callbackUrl)
+    {
+        if (callbackUrl.StartsWith('/') && !callbackUrl.StartsWith("//"))
+            return true;
+
+        if (!Uri.TryCreate(callbackUrl, UriKind.Absolute, out var uri))
+            return false;
+
+        var origin = $"{uri.Scheme}://{uri.Host}";
+
+        if (uri.Port is not (443 or 80))
+            origin += $":{uri.Port}";
+
+        return AuthContext.Options.TrustedOrigins?.Contains(origin, StringComparer.OrdinalIgnoreCase) ?? false;
     }
 }

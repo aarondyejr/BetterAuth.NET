@@ -9,11 +9,9 @@ public class AuthEndpointDefinition
 
     public required HttpMethodType Method { get; init; }
     
-    public AuthRequestSchema? QuerySchema { get; init; }
-    
     public Func<BetterAuthOptions, IValidator>? Validator { get; init; }
 
-    public required Func<AuthEndpointContext, Task<object>> Handler { get; init; }
+    public required Func<AuthEndpointContext, Task<object?>> Handler { get; init; }
 }
 
 public enum HttpMethodType

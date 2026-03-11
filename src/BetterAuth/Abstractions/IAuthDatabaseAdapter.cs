@@ -1,4 +1,4 @@
-﻿using BetterAuth.Adapters.Args;
+﻿using BetterAuth.Database.Args;
 using BetterAuth.Plugins;
 
 namespace BetterAuth.Abstractions;

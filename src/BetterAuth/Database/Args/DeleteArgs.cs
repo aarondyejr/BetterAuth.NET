@@ -1,8 +1,7 @@
-namespace BetterAuth.Adapters.Args;
+namespace BetterAuth.Database.Args;
 
-public record FindOneArgs
+public record DeleteArgs
 {
     public required string Model { get; init; }
     public required List<WhereClause> Where { get; init; }
-    public string[]? Select { get; init; }
 }

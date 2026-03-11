@@ -12,4 +12,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <Target Name="SignAssemblies" AfterTargets="Build">
+    <Exec Command="powershell -Command &quot;Get-ChildItem '$(OutDir)BetterAuth*.dll','$(OutDir)$(TargetFileName)' | ForEach-Object { Set-AuthenticodeSignature -FilePath $_.FullName -Certificate (Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Select-Object -First 1) }&quot;" />
+  </Target>
+
 </Project>

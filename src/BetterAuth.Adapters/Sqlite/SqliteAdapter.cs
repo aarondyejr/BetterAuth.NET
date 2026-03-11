@@ -1,5 +1,5 @@
 ﻿using BetterAuth.Abstractions;
-using BetterAuth.Adapters.Args;
+using BetterAuth.Database.Args;
 using BetterAuth.Plugins;
 using Dapper;
 using Microsoft.Data.Sqlite;
