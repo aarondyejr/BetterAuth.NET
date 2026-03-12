@@ -34,10 +34,10 @@ builder.Services.AddBetterAuth(new BetterAuthOptions
 
 builder.Services.AddBetterAuthStorage(new S3StorageOptions
 {
-    Endpoint = "s3.us-southeast-1.idrivee2.com",
-    AccessKey = "O8Hru7NQExwqxJXkCKxL",
-    SecretKey = "1ym4Sw1XwU99H47RvKCToGOJ22eaBVxalmqLCn2I",
-    Bucket = "images",
+    Endpoint = "",
+    AccessKey = "",
+    SecretKey = "",
+    Bucket = "",
 });
 
 var app = builder.Build();
