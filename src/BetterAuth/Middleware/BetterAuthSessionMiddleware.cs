@@ -8,7 +8,7 @@ public class BetterAuthSessionMiddleware(RequestDelegate next, BetterAuthEngine 
 {
     public async Task InvokeAsync(HttpContext httpContext)
     {
-        var sessionToken = httpContext.Request.Cookies["better-auth.session_token"];
+        var sessionToken = httpContext.Request.Cookies[engine.Options.SessionCookieName];
 
         if (!string.IsNullOrEmpty(sessionToken))
         {
@@ -34,7 +34,7 @@ public class BetterAuthSessionMiddleware(RequestDelegate next, BetterAuthEngine 
                         cookieOptions.Expires = DateTime.UtcNow.Add(engine.Options.Session.ExpiresIn);
                         
                         session = refreshed;
-                        httpContext.Response.Cookies.Append("better-auth.session_token", session.Token, cookieOptions);
+                        httpContext.Response.Cookies.Append(engine.Options.SessionCookieName, session.Token, cookieOptions);
                     }
                 }
 

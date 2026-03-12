@@ -16,7 +16,7 @@ public class SignOutEndpoint : IAuthEndpoint
         Method = HttpMethodType.POST,
         Handler = async ctx =>
         {
-            var sessionCookie = ctx.GetCookie("better-auth.session_token");
+            var sessionCookie = ctx.GetCookie(ctx.AuthContext.Options.SessionCookieName);
 
             if (string.IsNullOrEmpty(sessionCookie)) throw AuthApiException.Unauthorized();
 
@@ -30,7 +30,7 @@ public class SignOutEndpoint : IAuthEndpoint
             
             await ctx.AuthContext.AuthService.DeleteSessionAsync(session.Token, user, ctx.HttpContext.RequestServices);
             
-            ctx.DeleteCookie("better-auth.session_token");
+            ctx.DeleteCookie(ctx.AuthContext.Options.SessionCookieName);
 
             return ctx.Json(new Dictionary<string, object>
             {

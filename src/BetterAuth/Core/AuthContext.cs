@@ -13,5 +13,5 @@ public class AuthContext
     public required IPasswordHasher PasswordHasher { get; init; }
     public ILogger? Logger { get; init; } = null;
     public required string Secret { get; init; }
-    public AuthService AuthService { get; init; }
+    public required AuthService AuthService { get; init; }
 }

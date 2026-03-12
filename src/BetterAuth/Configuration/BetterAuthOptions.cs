@@ -30,4 +30,8 @@ public class BetterAuthOptions
     public EmailPasswordOptions EmailAndPassword { get; init; } = new();
     
     public EmailVerificationOptions EmailVerification { get; init; } = new();
+    
+    public EmailOptions? Email { get; init; }
+    
+    public string SessionCookieName { get; init; } = "better-auth.session_token";
 }

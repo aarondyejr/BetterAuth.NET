@@ -33,7 +33,7 @@ public class SignUpEndpoint : IAuthEndpoint
 
             var password = await ctx.AuthContext.PasswordHasher.HashAsync(ctx.Body["Password"]!.ToString()!);
 
-            await ctx.AuthContext.InternalAdapter.CreateAccountAsync(new()
+            await ctx.AuthContext.InternalAdapter.CreateAccountAsync(new CreateAccountInput
             {
                 AccountId = user.Id,
                 Password = password,
@@ -43,7 +43,7 @@ public class SignUpEndpoint : IAuthEndpoint
 
             var session = await ctx.AuthContext.AuthService.CreateSessionAsync(user.Id, new SessionMetadata()
             {
-                UserAgent = ctx.Request.Headers["User-Agent"].ToString(),
+                UserAgent = ctx.Request.Headers.UserAgent.ToString(),
                 IpAddress = ctx.Request.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString(),
             }, ctx.HttpContext.RequestServices);
             
@@ -51,7 +51,7 @@ public class SignUpEndpoint : IAuthEndpoint
 
             cookieOptions.Expires = DateTime.UtcNow.Add(ctx.AuthContext.Options.Session.ExpiresIn);
             
-            ctx.SetCookie("better-auth.session_token", session.Token, cookieOptions);
+            ctx.SetCookie(ctx.AuthContext.Options.SessionCookieName, session.Token, cookieOptions);
 
             if (!ctx.AuthContext.Options.EmailVerification.SendOnSignUp)
             {

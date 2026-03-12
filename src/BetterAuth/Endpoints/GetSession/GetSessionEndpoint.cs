@@ -3,7 +3,7 @@ using BetterAuth.Core;
 using BetterAuth.Errors;
 using BetterAuth.Plugins;
 
-namespace BetterAuth.Endpoints;
+namespace BetterAuth.Endpoints.GetSession;
 
 public class GetSessionEndpoint : IAuthEndpoint
 {
@@ -13,7 +13,7 @@ public class GetSessionEndpoint : IAuthEndpoint
         Method = HttpMethodType.GET,
         Handler = async ctx =>
         {
-            var sessionCookie = ctx.Request.Cookies["better-auth.session_token"];
+            var sessionCookie = ctx.GetCookie(ctx.AuthContext.Options.SessionCookieName);
             
             if (string.IsNullOrEmpty(sessionCookie)) throw AuthApiException.Unauthorized();
 

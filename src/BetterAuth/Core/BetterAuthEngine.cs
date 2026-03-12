@@ -4,6 +4,7 @@ using BetterAuth.Configuration;
 using BetterAuth.Crypto;
 using BetterAuth.Events;
 using BetterAuth.Plugins;
+using BetterAuth.Services;
 using Microsoft.AspNetCore.Routing;
 
 namespace BetterAuth.Core;
@@ -17,7 +18,9 @@ public class BetterAuthEngine
     
     public string Secret => ResolveSecret(Options);
     
-    public EventBus EventBus { get; set; }
+    public EventBus EventBus { get; }
+    
+    public AuthService AuthService { get; }
 
     public BetterAuthEngine(BetterAuthOptions options, EventBus eventBus)
     {
@@ -33,6 +36,8 @@ public class BetterAuthEngine
         
         PluginRegistry = new PluginRegistry();
 
+        AuthService = new AuthService(InternalAdapter, EventBus);
+
         var context = new AuthContext
         {
             Options = options,
@@ -40,6 +45,7 @@ public class BetterAuthEngine
             PasswordHasher = PasswordHasher,
             Secret = Secret,
             DatabaseAdapter = options.DatabaseAdapter,
+            AuthService = AuthService
         };
 
         foreach (var plugin in options.Plugins)

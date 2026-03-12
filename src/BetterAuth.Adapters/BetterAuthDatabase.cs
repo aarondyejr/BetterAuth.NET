@@ -1,10 +1,10 @@
 ﻿using BetterAuth.Abstractions;
+using BetterAuth.Adapters.MySql;
+using BetterAuth.Adapters.Postgres;
+using BetterAuth.Adapters.Sqlite;
 using BetterAuth.Database;
-using BetterAuth.Postgres.MySql;
-using BetterAuth.Postgres.Postgres;
-using BetterAuth.Postgres.Sqlite;
 
-namespace BetterAuth.Postgres;
+namespace BetterAuth.Adapters;
 
 public static class BetterAuthDatabase
 {

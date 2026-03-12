@@ -99,7 +99,7 @@ public static class BetterAuthEndpointExtensions
                         PasswordHasher = engine.PasswordHasher,
                         Logger = logger,
                         Secret = engine.Secret,
-                        AuthService = new AuthService(engine.InternalAdapter, engine.EventBus)
+                        AuthService = engine.AuthService
                     },
                     Body = body ?? new(),
                     Path = endpoint.Path,

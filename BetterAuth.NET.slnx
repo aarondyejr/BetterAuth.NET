@@ -5,6 +5,7 @@
   <Folder Name="/src/">
     <Project Path="src/BetterAuth.Adapters/BetterAuth.Adapters.csproj" />
     <Project Path="src/BetterAuth.Plugins/BetterAuth.Plugins.csproj" />
+    <Project Path="src/BetterAuth.Providers/BetterAuth.Providers.csproj" />
     <Project Path="src/BetterAuth/BetterAuth.csproj" />
   </Folder>
   <Folder Name="/tests/">

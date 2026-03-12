@@ -56,7 +56,7 @@ public class VerifyEmailEndpoint : IAuthEndpoint
 
                 cookieOptions.Expires = DateTime.UtcNow.Add(ctx.AuthContext.Options.Session.ExpiresIn);
                 
-                ctx.SetCookie("better-auth.session_token", session.Token, cookieOptions);
+                ctx.SetCookie(ctx.AuthContext.Options.SessionCookieName, session.Token, cookieOptions);
             }
 
             ctx.HttpContext.Response.Redirect(ctx.IsValidCallbackUrl(callbackUrl) ? callbackUrl : "/");

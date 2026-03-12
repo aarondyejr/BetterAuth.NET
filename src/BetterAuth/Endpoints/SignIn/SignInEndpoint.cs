@@ -39,7 +39,7 @@ internal class SignInEndpoint : IAuthEndpoint
 
             cookieOptions.Expires = DateTime.UtcNow.Add(ctx.AuthContext.Options.Session.ExpiresIn);
             
-            ctx.SetCookie("better-auth.session_token", session.Token, cookieOptions);
+            ctx.SetCookie(ctx.AuthContext.Options.SessionCookieName, session.Token, cookieOptions);
 
             if (!ctx.AuthContext.Options.EmailVerification.SendOnSignIn || user.EmailVerified)
                 return ctx.Json(new Dictionary<string, object?>

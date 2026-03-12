@@ -192,7 +192,7 @@ public class TransformingAdapter(
         {
             var value = transformed[key];
 
-            if (IsNumeric(value))
+            if (!config.SupportsBooleans && IsNumeric(value))
             {
                 var longValue = Convert.ToInt64(value);
                 if (longValue is 0 or 1)
